@@ -103,8 +103,8 @@ def admin_login():
     password = data.get("password", "")
 
     admin_email = os.getenv("ADMIN_EMAIL")
-    
-admin_password = os.getenv("ADMIN_PASSWORD")
+    admin_password = os.getenv("ADMIN_PASSWORD")
+
     if not admin_email or not admin_password:
         return jsonify({
             "error": "Admin login is not configured"
