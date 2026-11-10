@@ -1,4 +1,5 @@
 import os
+import hmac
 from datetime import datetime, timezone, date
 
 from flask import Flask, request, jsonify
@@ -102,9 +103,9 @@ def admin_login():
     password = data.get("password", "")
 
     admin_email = os.getenv("ADMIN_EMAIL")
-    admin_password_hash = os.getenv("ADMIN_PASSWORD_HASH")
-
-    if not admin_email or not admin_password_hash:
+    
+admin_password = os.getenv("ADMIN_PASSWORD")
+    if not admin_email or not admin_password:
         return jsonify({
             "error": "Admin login is not configured"
         }), 503
@@ -112,11 +113,12 @@ def admin_login():
     if email != admin_email:
         return jsonify({"error": "Invalid login"}), 401
 
-    try:
-        valid = bcrypt.checkpw(
-            password.encode("utf-8"),
-            admin_password_hash.encode("utf-8")
-        )
+admin_password = os.getenv("ADMIN_PASSWORD", "")
+
+valid = hmac.compare_digest(
+    password,
+    admin_password
+)
     except Exception:
         valid = False
 
