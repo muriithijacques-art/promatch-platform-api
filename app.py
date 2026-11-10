@@ -111,9 +111,15 @@ def admin_login():
         }), 503
 
     valid = (
-        hmac.compare_digest(str(email), admin_email)
-        and hmac.compare_digest(str(password), admin_password)
+    hmac.compare_digest(
+        str(email).strip().lower(),
+        admin_email.strip().lower()
     )
+    and hmac.compare_digest(
+        str(password),
+        admin_password
+    )
+)
 
     if not valid:
         return jsonify({"error": "Invalid login"}), 401
