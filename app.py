@@ -225,6 +225,61 @@ def admin_get_matches():
 
     return jsonify({"matches": result})
 
+# ADMIN EDIT MATCH
+@app.route("/api/admin/matches/<int:match_id>", methods=["PUT"])
+def edit_match(match_id):
+    if not admin_required():
+        return jsonify({"error": "Admin access required"}), 401
+
+    match = db.session.get(Match, match_id)
+
+    if not match:
+        return jsonify({"error": "Match not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    try:
+        for field in ["league", "home_team", "away_team", "prediction", "analysis"]:
+            if field in data:
+                setattr(match, field, data[field])
+
+        if "kickoff_at" in data:
+            kickoff = datetime.fromisoformat(
+                data["kickoff_at"].replace("Z", "+00:00")
+            )
+            if kickoff.tzinfo is None:
+                return jsonify({"error": "Timezone required"}), 400
+            match.kickoff_at = kickoff.astimezone(timezone.utc)
+
+        if "is_free_pick" in data:
+            match.is_free_pick = bool(data["is_free_pick"])
+
+        if "published" in data:
+            match.published = bool(data["published"])
+
+        db.session.commit()
+
+        return jsonify({"message": "Match updated successfully"})
+
+    except ValueError:
+        return jsonify({"error": "Invalid date or time"}), 400
+
+
+# ADMIN DELETE MATCH
+@app.route("/api/admin/matches/<int:match_id>", methods=["DELETE"])
+def delete_match(match_id):
+    if not admin_required():
+        return jsonify({"error": "Admin access required"}), 401
+
+    match = db.session.get(Match, match_id)
+
+    if not match:
+        return jsonify({"error": "Match not found"}), 404
+
+    db.session.delete(match)
+    db.session.commit()
+
+    return jsonify({"message": "Match deleted successfully"})
 # VIEW MATCHES
 @app.route("/api/matches", methods=["GET"])
 def get_matches():
