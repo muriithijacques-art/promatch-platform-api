@@ -110,17 +110,10 @@ def admin_login():
             "error": "Admin login is not configured"
         }), 503
 
-    if email != admin_email:
-        return jsonify({"error": "Invalid login"}), 401
-
-admin_password = os.getenv("ADMIN_PASSWORD", "")
-
-valid = hmac.compare_digest(
-    password,
-    admin_password
-)
-    except Exception:
-        valid = False
+    valid = (
+        hmac.compare_digest(str(email), admin_email)
+        and hmac.compare_digest(str(password), admin_password)
+    )
 
     if not valid:
         return jsonify({"error": "Invalid login"}), 401
@@ -129,6 +122,7 @@ valid = hmac.compare_digest(
         "token": create_token("admin"),
         "message": "Admin login successful"
     })
+
 
 
 # PUBLISH A MATCH
