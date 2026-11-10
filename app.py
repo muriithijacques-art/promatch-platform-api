@@ -151,6 +151,22 @@ def add_match():
         return jsonify({
             "error": "Please provide all required match details"
         }), 400
+        
+           if data.get("is_free_pick", False):
+        free_date = datetime.fromisoformat(
+            data["kickoff_at"].replace("Z", "+00:00")
+        ).date()
+
+        existing_free = Match.query.filter(
+            Match.is_free_pick == True,
+            Match.published == True,
+            db.func.date(Match.kickoff_at) == free_date
+        ).count()
+
+        if existing_free >= 3:
+            return jsonify({
+                "error": "Only 3 free matches are allowed per day."
+            }), 400 
 
     try:
         kickoff = datetime.fromisoformat(
