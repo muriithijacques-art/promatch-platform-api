@@ -198,7 +198,32 @@ def add_match():
     except ValueError:
         return jsonify({"error": "Invalid kickoff date or time"}), 400
 
+# ADMIN VIEW ALL MATCHES
+@app.route("/api/admin/matches", methods=["GET"])
+def admin_get_matches():
+    if not admin_required():
+        return jsonify({"error": "Admin access required"}), 401
 
+    matches = Match.query.order_by(
+        Match.kickoff_at.desc()
+    ).all()
+
+    result = []
+
+    for match in matches:
+        result.append({
+            "id": match.id,
+            "league": match.league,
+            "home_team": match.home_team,
+            "away_team": match.away_team,
+            "kickoff_at": match.kickoff_at.isoformat(),
+            "prediction": match.prediction,
+            "analysis": match.analysis,
+            "is_free_pick": match.is_free_pick,
+            "published": match.published
+        })
+
+    return jsonify({"matches": result})
 
 # VIEW MATCHES
 @app.route("/api/matches", methods=["GET"])
